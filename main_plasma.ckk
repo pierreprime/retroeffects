@@ -1,0 +1,125 @@
+/*
+Copyright (c) 2004, Lode Vandevenne
+All rights reserved.
+*/
+
+#include <cmath>
+#include <string>
+#include <vector>
+#include <iostream>
+
+#include "quickcg.h"
+
+#define screenWidth 512
+#define screenHeight 512
+
+// Y-coordinate first to use horizontal scanlines
+Uint32 plasma[screenHeight][screenWidth];
+Uint32 buffer[screenHeight][screenWidth];
+Uint32 palette[256];
+
+using namespace QuickCG;
+using namespace std;
+
+//place the example code below here:
+
+int main(int /*argc*/, char */*argv*/[])
+{
+  screen(screenWidth, screenHeight, 0, "Plasma");
+
+  // generate the palette
+  ColorRGB colorRGB;
+
+  
+  for(int x=0; x<256; x++){
+      /*
+      // vary flux of color through palette
+      colorRGB = HSVtoRGB(ColorHSV(x, 255, 255));
+      palette[x] = RGBtoINT(colorRGB);*/
+
+      /*
+      // alternative palette
+      colorRGB.r = int(128.0 + 128 * sin(3.1415 * x / 32.0));
+      colorRGB.g = int(128.0 + 128 * sin(3.1415 * x / 64.0));
+      colorRGB.b = int(128.0 + 128 * sin(3.1415 * x / 128.0));
+      palette[x] = RGBtoINT(colorRGB);*/
+
+      colorRGB.r = int(128.0 + 128 * sin(3.1415 * x / 16.0));
+      colorRGB.g = int(128.0 + 128 * sin(3.1415 * x / 128.0));
+      colorRGB.b = 0;
+      palette[x] = RGBtoINT(colorRGB);
+  }
+
+  // generate plasma once
+  for(int y=0; y<h; y++)
+      for(int x=0; x<w; x++){
+          // plasma buffer is sum of sines
+          /*
+          int color = int(
+                  128.0 + (128.0 * sin(x / 16.0))
+                  + 128.0 + (128.0 * sin(y / 16.0))
+                  ) / 2;*/
+
+          // more organic plasma
+    /*
+    int color = int
+        (
+            128.0 + (128.0 * sin(x / 16.0))
+        + 128.0 + (128.0 * sin(y / 8.0))
+        + 128.0 + (128.0 * sin((x + y) / 16.0))
+        + 128.0 + (128.0 * sin(sqrt(double(x * x + y * y)) / 8.0))
+        ) / 4;*/
+
+int color = int
+    (
+        128.0 + (128.0 * sin(x / 16.0))
+      + 128.0 + (128.0 * sin(y / 32.0))
+      + 128.0 + (128.0 * sin(sqrt(double((x - w / 2.0)* (x - w / 2.0) + (y - h / 2.0) * (y - h / 2.0))) / 8.0))
+      + 128.0 + (128.0 * sin(sqrt(double(x * x + y * y)) / 8.0))
+    ) / 4;
+
+          plasma[y][x] = color;
+          //pset(x, y, ColorRGB(color, color, color));
+      }
+
+  int paletteShift;
+
+  // animation loop
+  while(!done()){
+      // variation of paletteShift in time
+      paletteShift = int(getTime() * 16);
+
+      // redraw every pixel following the shift
+      for(int y=0; y<h; y++)
+          for(int x=0; x<w; x++){
+              buffer[y][x] = palette[(plasma[y][x] + paletteShift) % 256];
+          }
+
+      // make everything visible
+      drawBuffer(buffer[0]);
+      redraw();
+  }
+
+  /*
+  for(int y = 0; y < h; y++)
+  for(int x = 0; x < w; x++)
+  {
+      // determine color following sin of x
+      //int color = int(128.0 + (128.0 * sin((x+y) / 8.0)));
+      
+      // circle, distance to center of picture
+      //int color = int(128.0 + (128.0 * sin(sqrt((x - w / 2.0) * (x - w / 2.0) + (y - h / 2.0) * (y - h / 2.0)) / 8.0)));
+     
+      // greyscale plasma 
+      int color = int(
+              128.0 + (128 * sin(x / 8.0)) + 128.0 + (128.0 * sin(y / 8.0))
+              ) / 2;
+      
+      // set RGB color at position x,y
+      pset(x, y, ColorRGB(color, color, color));
+  }*/
+
+  //redraw();
+  //sleep();
+  return(0);
+}
